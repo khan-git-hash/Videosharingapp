@@ -3,6 +3,3 @@ flask_sqlalchemy
 flask_cors
 werkzeug
 flask_caching
-
-
-30ae084b2deb76a3cbf31ef3f776f79e
