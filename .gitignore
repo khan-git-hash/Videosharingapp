@@ -1,0 +1,23 @@
+# Ignore virtual environments
+venv/
+
+# Ignore Python bytecode
+__pycache__/
+
+# Ignore VSCode settings
+.vscode/
+
+# Ignore node_modules if you use npm (for frontend projects)
+node_modules/
+
+# Ignore upload directories
+Backend/uploads/
+
+# Ignore any compiled files and logs
+*.log
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore IDE configurations
+.idea/
