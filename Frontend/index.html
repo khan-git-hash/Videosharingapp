@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Welcome to VidShare</h1>
+    
+    <!-- Authentication Forms -->
+    <div id="authForms">
+        <form id="loginForm">
+            <input type="text" id="loginUsername" placeholder="Username">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <button type="button" onclick="loginUser()">Login</button>
+        </form>
+        <form id="registerForm">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <select id="userType">
+                <option value="consumer">Consumer</option>
+                <option value="creator">Creator</option>
+            </select>
+            <button type="button" onclick="registerUser()">Register</button>
+        </form>
+    </div>
+
+    <!-- Video Upload Form (Visible only for Creators) -->
+    <div id="videoUploadForm" style="display:none;">
+        <form enctype="multipart/form-data">
+            <input type="text" id="title" placeholder="Title">
+            <textarea id="description" placeholder="Description"></textarea>
+            <input type="file" id="videoFile">
+            <button type="button" onclick="uploadVideo()">Upload Video</button>
+        </form>
+    </div>
+
+    <!-- Video Dashboard -->
+    <div id="videoList" style="display:none;">
+        <h2>Latest Videos</h2>
+        <div id="videosContainer"></div>
+    </div>
+
+    <!-- Logout Button -->
+    <div id="logoutButton" style="display:none;">
+        <button type="button" onclick="logoutUser()">Logout</button>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
