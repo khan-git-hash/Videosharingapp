@@ -9,8 +9,8 @@ from pathlib import Path
 # App Initialization
 app = Flask(__name__)
 
-# Enable CORS with proper configuration
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:5000", "http://127.0.0.1:5000"]}})
+# Enable CORS with dynamic origins
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
 # Define paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -45,6 +45,17 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.String(500), nullable=False)
+    rating = db.Column(db.Integer)  # Rating out of 5
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    def __repr__(self):
+        return f'<Comment by User {self.user_id} on Video {self.video_id}>'
+
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
@@ -65,19 +76,6 @@ def serve_index():
 def serve_static(path):
     """Serve static files like CSS and JS."""
     return send_from_directory(BASE_DIR.parent / "frontend", path)
-
-@app.route('/register', methods=['POST'])
-def register_user():
-    data = request.json
-    if not data or 'username' not in data or 'password' not in data or 'type' not in data:
-        return jsonify({"message": "Missing data"}), 400
-    if User.query.filter_by(username=data['username']).first():
-        return jsonify({"message": "User already exists"}), 409
-    user = User(username=data['username'], user_type=data['type'])
-    user.set_password(data['password'])
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({"message": "User registered successfully!"}), 201
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -122,13 +120,11 @@ def list_videos():
         for video in videos
     ])
 
-
 @app.route('/uploads/<filename>')
 def serve_video(filename):
     """Serve video files from the uploads folder."""
     print(f"Serving video: {filename}")  # Debugging
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=False, mimetype='video/mp4')
-
 
 @app.route('/logout', methods=['POST'])
 def logout():
@@ -136,6 +132,28 @@ def logout():
     session.clear()  # Clear all session data
     return jsonify({"message": "Logged out successfully!"}), 200
 
+@app.route('/register', methods=['POST'])
+def register_user():
+    data = request.json
+    if not data or 'username' not in data or 'password' not in data or 'type' not in data:
+        return jsonify({"message": "Missing data"}), 400
+
+    # Restrict "creator" user creation to admins only
+    if data['type'] == 'creator':
+        if 'is_admin' not in session or not session.get('is_admin'):
+            return jsonify({"message": "Unauthorized: Only admins can create creator accounts"}), 403
+
+    # Check if username already exists
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({"message": "User already exists"}), 409
+
+    # Create the new user
+    user = User(username=data['username'], user_type=data['type'])
+    user.set_password(data['password'])
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({"message": "User registered successfully!"}), 201
 
 # Main block to initialize the database
 if __name__ == '__main__':
@@ -144,5 +162,3 @@ if __name__ == '__main__':
         db.create_all()
     app.run(debug=True)
 
-print("BASE_DIR:", BASE_DIR)
-print("DB_FILE:", DB_FILE)
